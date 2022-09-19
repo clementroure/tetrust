@@ -50,6 +50,7 @@ fn main() {
     let _source = Decoder::new(file).unwrap();
     let source = _source.repeat_infinite();
     let sink = Sink::try_new(&stream_handle).unwrap();
+    sink.set_volume(0.2);
     sink.append(source);
 
     let mut rot:u32 = 0;
@@ -82,7 +83,7 @@ fn main() {
             }
         };
 
-        let block_0 = [
+        let mut block_0 = [
             [x_pos, y_pos, 30.0, 30.0], 
             [x_pos+30.0, y_pos, 30.0, 30.0],
             [x_pos+60.0, y_pos, 30.0, 30.0], 
@@ -107,6 +108,12 @@ fn main() {
             [x_pos, y_pos+30.0, 30.0, 30.0], 
             [x_pos+30.0, y_pos+30.0, 30.0, 30.0]
             ];
+        block_0 = [
+            [x_pos-30.0, y_pos, 30.0, 30.0], 
+            [x_pos, y_pos, 30.0, 30.0],
+            [x_pos+30.0, y_pos, 30.0, 30.0], 
+            [x_pos+30.0, y_pos+30.0, 30.0, 30.0]
+            ];
         }
         else{
         block_2 = [
@@ -115,6 +122,12 @@ fn main() {
             [x_pos+30.0, y_pos+30.0, 30.0, 30.0], 
             [x_pos+60.0, y_pos+30.0, 30.0, 30.0]
             ]; 
+        block_0 = [
+            [x_pos, y_pos, 30.0, 30.0], 
+            [x_pos+30.0, y_pos, 30.0, 30.0],
+            [x_pos+60.0, y_pos, 30.0, 30.0], 
+            [x_pos+60.0, y_pos+30.0, 30.0, 30.0]
+            ];
         }
         let block_3 = [
             [x_pos, y_pos+60.0, 30.0, 30.0], 
