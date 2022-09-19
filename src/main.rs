@@ -1,5 +1,3 @@
-// https://github.com/PistonDevelopers/piston-examples/blob/master/examples/user_input/src/main.rs
-
 use piston_window::*;
 use rand::Rng;
 use fps_clock::*;
@@ -9,13 +7,6 @@ use std::io::BufReader;
 use std::time::Duration;
 use rodio::{Decoder, OutputStream, Sink};
 use rodio::source::{SineWave, Source};
-
-struct Block {
-    active: bool,
-    username: String,
-    email: String,
-    sign_in_count: u64,
-}
 
 fn main() {
 
