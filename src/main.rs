@@ -115,7 +115,7 @@ fn main() {
         
                         if(tetros_arr[index].scheme[tetros_arr[index].rot][j][i] == 1){
 
-                            if((tetros_arr[index].coord[1] + j as u32) > 21){
+                            if((tetros_arr[index].coord[1] + j as u32) > 20){
 
                                  canMove = false;
                             }
