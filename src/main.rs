@@ -108,18 +108,56 @@ fn main() {
             }
             if key == Key::Down {
 
-                if(tetros_arr[index].coord[1]<20){
+                let mut canMove = true;
+
+                for i in 0..tetros_arr[index].scheme[0].len() {
+                    for j in 0..tetros_arr[index].scheme[0].len() {
+        
+                        if(tetros_arr[index].scheme[tetros_arr[index].rot][j][i] == 1){
+
+                            if((tetros_arr[index].coord[1] + j as u32) > 21){
+
+                                 canMove = false;
+                            }
+                        }
+                    }
+                }
+
+                if(canMove){
 
                     tetros_arr[index].coord[1]+=1;
                 }
             }
             if (key == Key::Up || key == Key::Space) {
 
+                let mut canRot = true;
+                let mut _rot = 0;
+
                 if tetros_arr[index].rot < 3{
-                    tetros_arr[index].rot+=1;
+
+                    _rot=tetros_arr[index].rot+1;
                 }
                 else{
-                    tetros_arr[index].rot = 0;
+
+                    _rot=0;
+                }
+
+                for i in 0..tetros_arr[index].scheme[0].len() {
+                    for j in 0..tetros_arr[index].scheme[0].len() {
+        
+                        if(tetros_arr[index].scheme[_rot][j][i] == 1){
+
+                            if((tetros_arr[index].coord[0] + i as u32) < 2 || (tetros_arr[index].coord[0] + i as u32) > 11 || (tetros_arr[index].coord[1] + j as u32) > 21){
+
+                                 canRot = false;
+                            }
+                        }
+                    }
+                }
+
+                if(canRot){
+
+                        tetros_arr[index].rot=_rot;    
                 }
             }
         };
