@@ -31,10 +31,13 @@ impl Block {
 
 fn main() {
 
+    let mut score = 0;
+
     let width:f64 = 300.0;
     let height:f64 = 600.0;
     
-    let mut window: PistonWindow = WindowSettings::new("Tetrust", [width as u32, height as u32]).exit_on_esc(true).build().unwrap();
+    let mut title = format!("Tetrust - score: {}", score);
+    let mut window: PistonWindow = WindowSettings::new(title, [width as u32, height as u32]).exit_on_esc(true).build().unwrap();
     let mut fps = FpsClock::new(60); 
     let mut rng = rand::thread_rng();
     let mut isGameStarted:bool = false;
@@ -90,6 +93,7 @@ fn main() {
                                             }
                                         }
 
+                                        let mut line_cleared_nb = 0;
                                         for i in 2..22 {
                                             let mut line: Vec<u32> = vec![];
                                             for j in 2..12 {
@@ -100,12 +104,30 @@ fn main() {
                                             if !line.contains(&0) {
         
                                                println!("line full");
+                                               line_cleared_nb+=1;
                                                // delete line from grid
                                                for a in 2..12{
                                                 grid[i][a] = 0;
                                                }
                                             }
                                         }
+                                        if(line_cleared_nb == 1){
+
+                                            score += 100;
+                                        }
+                                        else if(line_cleared_nb == 2){
+
+                                            score += 300;
+                                        }
+                                        else if(line_cleared_nb == 3){
+                                            
+                                            score += 500;
+                                        }
+                                        else if(line_cleared_nb >= 4){
+                                            
+                                            score += 800;
+                                        }
+                                        window.set_title(format!("Tetrust - score: {}", score));
 
                                         let rnd = rng.gen_range(0..colors_list.len()-1);
                                         let tetros = Block::new(colors_list[rnd], tetros_list[rnd]);
@@ -147,6 +169,7 @@ fn main() {
                                         }
                                     }
 
+                                    let mut line_cleared_nb = 0;
                                     for i in 2..22 {
                                         let mut line: Vec<u32> = vec![];
                                         for j in 2..12 {
@@ -156,13 +179,31 @@ fn main() {
                                         //println!();
                                         if !line.contains(&0) {
     
-                                           println!("line full");
-                                           // delete line from grid
-                                           for a in 2..12{
+                                            println!("line full");
+                                            line_cleared_nb+=1;
+                                            // delete line from grid
+                                            for a in 2..12{
                                             grid[i][a] = 0;
-                                           }
+                                            }
                                         }
                                     }
+                                    if(line_cleared_nb == 1){
+
+                                        score += 100;
+                                    }
+                                    else if(line_cleared_nb == 2){
+
+                                        score += 300;
+                                    }
+                                    else if(line_cleared_nb == 3){
+                                        
+                                        score += 500;
+                                    }
+                                    else if(line_cleared_nb >= 4){
+                                        
+                                        score += 800;
+                                    }
+                                    window.set_title(format!("Tetrust - score: {}", score));
 
                                     let rnd = rng.gen_range(0..colors_list.len()-1);
                                     let tetros = Block::new(colors_list[rnd], tetros_list[rnd]);
@@ -290,6 +331,7 @@ fn main() {
                                 if((tetros_arr[index].coord[1] + j as u32) < 4){
 
                                     println!("Game Over");
+                                    println!("{}", score);
                                     game_over = true;
                                     sink.stop();
 
@@ -298,6 +340,7 @@ fn main() {
                                     // sink.append(source);
                                 }
             
+                                let mut line_cleared_nb = 0;
                                 for i in 2..22 {
                                     let mut line: Vec<u32> = vec![];
                                     for j in 2..12 {
@@ -307,13 +350,31 @@ fn main() {
                                     //println!();
                                     if !line.contains(&0) {
 
-                                       println!("line full");
-                                       // delete line from grid
-                                       for a in 2..12{
+                                    println!("line full");
+                                    line_cleared_nb+=1;
+                                    // delete line from grid
+                                    for a in 2..12{
                                         grid[i][a] = 0;
-                                       }
+                                    }
                                     }
                                 }
+                                if(line_cleared_nb == 1){
+
+                                    score += 100;
+                                }
+                                else if(line_cleared_nb == 2){
+
+                                    score += 300;
+                                }
+                                else if(line_cleared_nb == 3){
+                                    
+                                    score += 500;
+                                }
+                                else if(line_cleared_nb >= 4){
+                                    
+                                    score += 800;
+                                }
+                                window.set_title(format!("Tetrust - score: {}", score));
                                 //println!();
 
                                 ///////
