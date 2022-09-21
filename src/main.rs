@@ -7,6 +7,7 @@ use std::io::BufReader;
 use std::time::Duration;
 use rodio::{Decoder, OutputStream, Sink};
 use rodio::source::{Source};
+use rand::Rng;
 #[path = "const/tetros.rs"] mod tetros;
 #[path = "const/colors.rs"] mod colors;
 
@@ -37,6 +38,7 @@ fn main() {
     
     let mut window: PistonWindow = WindowSettings::new("Tetrust", [width as u32, height as u32]).exit_on_esc(true).build().unwrap();
     let mut fps = FpsClock::new(60); 
+    let mut rng = rand::thread_rng();
     let mut isGameStarted:bool = false;
 
     let mut frame:u32= 0;
@@ -45,8 +47,11 @@ fn main() {
     // initial empty grid with 0 value
     let mut grid: [[u32; 14]; 22] = [[0; 14]; 22];
 
-    let mut tetros = Block::new(colors::light_blue, tetros::tetros_I);
-    let mut tetros_arr: Vec<Block> = vec![tetros];
+    //let tetros_list = [tetros::tetros_I, tetros::tetros_O, tetros::tetros_T, tetros::tetros_L,tetros::tetros_J,tetros::tetros_S,tetros::tetros_Z];
+    let colors_list = [colors::CYAN,colors::YELLOW,colors::PURPLE,colors::GREEN,colors::RED,colors::BLUE,colors::ORANGE,colors::GREY];
+
+    let rnd = rng.gen_range(0..colors_list.len());
+    let mut tetros_arr: Vec<Block> = vec![Block::new(colors_list[rnd], tetros::tetros_I)];
 
     let mut index = 0;
 
@@ -71,6 +76,23 @@ fn main() {
             
                             if(tetros_arr[index].scheme[tetros_arr[index].rot][j][i] == 1){
 
+                                if(grid[(tetros_arr[index].coord[1] + j as u32) as usize][(tetros_arr[index].coord[0] + i as u32 + 1)as usize] == 1){
+
+                                    for i in 0..tetros_arr[index].scheme[0].len() {
+                                        for j in 0..tetros_arr[index].scheme[0].len() {
+                            
+                                            if(tetros_arr[index].scheme[tetros_arr[index].rot][j][i] == 1){
+                            
+                                                grid[(tetros_arr[index].coord[1] as f64 + j as f64)as usize][(tetros_arr[index].coord[0] as f64 + i as f64)as usize] = 1;
+                                            }
+                                        }
+                                    }
+
+                                    let tetros = Block::new(colors::CYAN, tetros::tetros_I);
+                                    tetros_arr.push(tetros);
+                                    index+=1;
+                                }
+
                                 if((tetros_arr[index].coord[0] + i as u32) > 10){
 
                                      canMove = false;
@@ -93,6 +115,23 @@ fn main() {
         
                         if(tetros_arr[index].scheme[tetros_arr[index].rot][j][i] == 1){
 
+                            if(grid[(tetros_arr[index].coord[1] + j as u32) as usize][(tetros_arr[index].coord[0] + i as u32 - 1)as usize] == 1){
+
+                                for i in 0..tetros_arr[index].scheme[0].len() {
+                                    for j in 0..tetros_arr[index].scheme[0].len() {
+                        
+                                        if(tetros_arr[index].scheme[tetros_arr[index].rot][j][i] == 1){
+                        
+                                            grid[(tetros_arr[index].coord[1] as f64 + j as f64)as usize][(tetros_arr[index].coord[0] as f64 + i as f64)as usize] = 1;
+                                        }
+                                    }
+                                }
+
+                                let tetros = Block::new(colors::CYAN, tetros::tetros_I);
+                                tetros_arr.push(tetros);
+                                index+=1;
+                            }
+
                             if((tetros_arr[index].coord[0] + i as u32) < 3){
 
                                  canMove = false;
@@ -108,25 +147,7 @@ fn main() {
             }
             if key == Key::Down {
 
-                let mut canMove = true;
-
-                for i in 0..tetros_arr[index].scheme[0].len() {
-                    for j in 0..tetros_arr[index].scheme[0].len() {
-        
-                        if(tetros_arr[index].scheme[tetros_arr[index].rot][j][i] == 1){
-
-                            if((tetros_arr[index].coord[1] + j as u32) > 20){
-
-                                 canMove = false;
-                            }
-                        }
-                    }
-                }
-
-                if(canMove){
-
-                    tetros_arr[index].coord[1]+=1;
-                }
+                frame=speed;
             }
             if (key == Key::Up || key == Key::Space) {
 
@@ -146,6 +167,11 @@ fn main() {
                     for j in 0..tetros_arr[index].scheme[0].len() {
         
                         if(tetros_arr[index].scheme[_rot][j][i] == 1){
+
+                            if(grid[(tetros_arr[index].coord[1] + j as u32) as usize][(tetros_arr[index].coord[0] + i as u32)as usize] == 1 || grid[(tetros_arr[index].coord[1] + j as u32) as usize][(tetros_arr[index].coord[0] + i as u32)as usize] == 1){
+
+                                canRot = false;
+                            }
 
                             if((tetros_arr[index].coord[0] + i as u32) < 2 || (tetros_arr[index].coord[0] + i as u32) > 11 || (tetros_arr[index].coord[1] + j as u32) > 21){
 
@@ -190,35 +216,13 @@ fn main() {
 
                                 if(tetros_arr[n].scheme[tetros_arr[n].rot][j][i] == 1){
 
-                                    rectangle(hex("33FFF8"), 
+                                    rectangle(tetros_arr[index].color, 
                                         [(tetros_arr[n].coord[0] as f64 *30.0 + i as f64 * 30.0 - 60.0), (tetros_arr[n].coord[1] as f64 *30.0 + j as f64 * 30.0 - 60.0), 29.0, 29.0], 
                                         c.transform, g);    
                                 }
                             }
                         }
                     }
-
-                    // if tetros_arr[index].coord[1] > 18 {
-    
-                    //     // for i in 0..tetros_arr[index].scheme[0].len() {
-                    //     //     for j in 0..tetros_arr[index].scheme[0].len() {
-                
-                    //     //         if(tetros_arr[index].scheme[tetros_arr[index].rot][i][j] == 1){
-                
-                    //     //             grid[(tetros_arr[index].coord[1] as f64 -4.0 - j as f64)as usize][(tetros_arr[index].coord[0] as f64 + i as f64)as usize] = 0;
-                    //     //             grid[(tetros_arr[index].coord[1] as f64 - j as f64)as usize][(tetros_arr[index].coord[0] as f64 + i as f64)as usize] = 1;
-                    //     //         }
-                    //     //     }
-                    //     // }
-    
-                    //     // for i in 0..20 {
-                    //     //     for j in 0..10 {
-                    //     //        print!("{}", grid[i][j]);
-                    //     //     }
-                    //     //     println!();
-                    //     // }
-                    //     // println!();
-                    // }
                 }
         });
 
@@ -230,7 +234,7 @@ fn main() {
 
                     if(tetros_arr[index].scheme[tetros_arr[index].rot][j][i] == 1){
                   
-                        if((tetros_arr[index].coord[1] + j as u32) > 20){
+                        if((tetros_arr[index].coord[1] + j as u32) > 20 || grid[(tetros_arr[index].coord[1] + j as u32 + 1) as usize][(tetros_arr[index].coord[0] + i as u32)as usize] == 1){
 
                             ////////
                         
@@ -254,7 +258,7 @@ fn main() {
 
                             ///////
 
-                            let tetros = Block::new(colors::light_blue, tetros::tetros_I);
+                            let tetros = Block::new(colors::CYAN, tetros::tetros_I);
                             tetros_arr.push(tetros);
                             index+=1;
                         }
