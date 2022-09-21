@@ -48,7 +48,7 @@ fn main() {
     let tetros_list = [tetros::tetros_I, tetros::tetros_O, tetros::tetros_T, tetros::tetros_L,tetros::tetros_J,tetros::tetros_S,tetros::tetros_Z];
     let colors_list = [colors::CYAN,colors::YELLOW,colors::PURPLE,colors::GREEN,colors::RED,colors::BLUE,colors::ORANGE,colors::GREY];
 
-    let rnd = rng.gen_range(0..colors_list.len());
+    let rnd = rng.gen_range(0..colors_list.len()-1);
     let mut tetros_arr: Vec<Block> = vec![Block::new(colors_list[rnd], tetros_list[rnd])];
 
     let mut index = 0;
@@ -86,7 +86,7 @@ fn main() {
                                         }
                                     }
 
-                                    let rnd = rng.gen_range(0..colors_list.len());
+                                    let rnd = rng.gen_range(0..colors_list.len()-1);
                                     let tetros = Block::new(colors_list[rnd], tetros_list[rnd]);
                                     tetros_arr.push(tetros);
                                     index+=1;
@@ -126,7 +126,7 @@ fn main() {
                                     }
                                 }
 
-                                let rnd = rng.gen_range(0..colors_list.len());
+                                let rnd = rng.gen_range(0..colors_list.len()-1);
                                 let tetros = Block::new(colors_list[rnd], tetros_list[rnd]);
                                 tetros_arr.push(tetros);
                                 index+=1;
@@ -265,7 +265,7 @@ fn main() {
 
                                 ///////
 
-                                let rnd = rng.gen_range(0..colors_list.len());
+                                let rnd = rng.gen_range(0..colors_list.len()-1);
                                 let tetros = Block::new(colors_list[rnd], tetros_list[rnd]);
                                 tetros_arr.push(tetros);
                                 index+=1;
