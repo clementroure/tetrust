@@ -16,7 +16,6 @@ struct Block {
     scheme: [[[u32;4] ; 4]; 4],
     coord: [u32; 2],
     rot: usize,
-    active: bool,
 }
 
 impl Block {
@@ -26,7 +25,6 @@ impl Block {
             scheme: scheme,
             coord: [2, 0], 
             rot: 0, 
-            active: true, 
         }
     }
 }
@@ -47,11 +45,11 @@ fn main() {
     // initial empty grid with 0 value
     let mut grid: [[u32; 14]; 22] = [[0; 14]; 22];
 
-    //let tetros_list = [tetros::tetros_I, tetros::tetros_O, tetros::tetros_T, tetros::tetros_L,tetros::tetros_J,tetros::tetros_S,tetros::tetros_Z];
+    let tetros_list = [tetros::tetros_I, tetros::tetros_O, tetros::tetros_T, tetros::tetros_L,tetros::tetros_J,tetros::tetros_S,tetros::tetros_Z];
     let colors_list = [colors::CYAN,colors::YELLOW,colors::PURPLE,colors::GREEN,colors::RED,colors::BLUE,colors::ORANGE,colors::GREY];
 
     let rnd = rng.gen_range(0..colors_list.len());
-    let mut tetros_arr: Vec<Block> = vec![Block::new(colors_list[rnd], tetros::tetros_I)];
+    let mut tetros_arr: Vec<Block> = vec![Block::new(colors_list[rnd], tetros_list[rnd])];
 
     let mut index = 0;
 
@@ -88,7 +86,8 @@ fn main() {
                                         }
                                     }
 
-                                    let tetros = Block::new(colors::CYAN, tetros::tetros_I);
+                                    let rnd = rng.gen_range(0..colors_list.len());
+                                    let tetros = Block::new(colors_list[rnd], tetros_list[rnd]);
                                     tetros_arr.push(tetros);
                                     index+=1;
                                 }
@@ -127,7 +126,8 @@ fn main() {
                                     }
                                 }
 
-                                let tetros = Block::new(colors::CYAN, tetros::tetros_I);
+                                let rnd = rng.gen_range(0..colors_list.len());
+                                let tetros = Block::new(colors_list[rnd], tetros_list[rnd]);
                                 tetros_arr.push(tetros);
                                 index+=1;
                             }
@@ -216,7 +216,7 @@ fn main() {
 
                                 if(tetros_arr[n].scheme[tetros_arr[n].rot][j][i] == 1){
 
-                                    rectangle(tetros_arr[index].color, 
+                                    rectangle(tetros_arr[n].color, 
                                         [(tetros_arr[n].coord[0] as f64 *30.0 + i as f64 * 30.0 - 60.0), (tetros_arr[n].coord[1] as f64 *30.0 + j as f64 * 30.0 - 60.0), 29.0, 29.0], 
                                         c.transform, g);    
                                 }
@@ -236,31 +236,40 @@ fn main() {
                   
                         if((tetros_arr[index].coord[1] + j as u32) > 20 || grid[(tetros_arr[index].coord[1] + j as u32 + 1) as usize][(tetros_arr[index].coord[0] + i as u32)as usize] == 1){
 
+                            if((tetros_arr[index].coord[1] + j as u32) < 3){
+
+                                println!("Game Over");
+                                speed = 1000000000; // freeze time
+                            }
+                            else{
+
                             ////////
                         
-                            for i in 0..tetros_arr[index].scheme[0].len() {
-                                for j in 0..tetros_arr[index].scheme[0].len() {
-                    
-                                    if(tetros_arr[index].scheme[tetros_arr[index].rot][j][i] == 1){
-                    
-                                        grid[(tetros_arr[index].coord[1] as f64 + j as f64)as usize][(tetros_arr[index].coord[0] as f64 + i as f64)as usize] = 1;
+                                for i in 0..tetros_arr[index].scheme[0].len() {
+                                    for j in 0..tetros_arr[index].scheme[0].len() {
+                        
+                                        if(tetros_arr[index].scheme[tetros_arr[index].rot][j][i] == 1){
+                        
+                                            grid[(tetros_arr[index].coord[1] as f64 + j as f64)as usize][(tetros_arr[index].coord[0] as f64 + i as f64)as usize] = 1;
+                                        }
                                     }
                                 }
-                            }
-        
-                            for i in 0..22 {
-                                for j in 0..14 {
-                                    print!("{}", grid[i][j]);
+            
+                                for i in 0..22 {
+                                    for j in 0..14 {
+                                        print!("{}", grid[i][j]);
+                                    }
+                                    println!();
                                 }
                                 println!();
+
+                                ///////
+
+                                let rnd = rng.gen_range(0..colors_list.len());
+                                let tetros = Block::new(colors_list[rnd], tetros_list[rnd]);
+                                tetros_arr.push(tetros);
+                                index+=1;
                             }
-                            println!();
-
-                            ///////
-
-                            let tetros = Block::new(colors::CYAN, tetros::tetros_I);
-                            tetros_arr.push(tetros);
-                            index+=1;
                         }
                     }
                 }
