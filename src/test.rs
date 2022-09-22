@@ -107,7 +107,7 @@ fn main() {
                                                line_cleared_nb+=1;
                                                // delete line from grid
                                                for a in 2..12{
-                                                //grid[i][a] = 0;
+                                                grid[i][a] = 0;
                                                }
                                             }
                                         }
@@ -184,7 +184,7 @@ fn main() {
                                             line_cleared_nb+=1;
                                             // delete line from grid
                                             for a in 2..12{
-                                            //grid[i][a] = 0;
+                                            grid[i][a] = 0;
                                             }
                                         }
                                     }
@@ -359,18 +359,41 @@ fn main() {
                                 for i in 2..22 {
                                     let mut line: Vec<u32> = vec![];
                                     for j in 2..12 {
-                                        //print!("{}", grid[i][j]);
+                                        print!("{}", grid[i][j]);
                                         line.push(grid[i as usize][j as usize])
                                     }
-                                    //println!();
+                                    println!();
                                     if !line.contains(&0) {
 
-                                    println!("line full");
-                                    line_cleared_nb+=1;
-                                    // delete line from grid
-                                    for a in 2..12{
-                                        //grid[i][a] = 0;
-                                    }
+                                        for x in 2..12{
+                                            grid[i][x] = 0;
+                                        }
+
+                                        println!("line full");
+                                        line_cleared_nb+=1;
+
+                                        // delete line from grid
+                                        for n in 0..tetros_arr.len()-1 {
+                              
+                                            for i in 0..tetros_arr[n].scheme[0].len() {
+                                                for j in 0..tetros_arr[n].scheme[0].len() {
+                                    
+                                                    if(tetros_arr[n].scheme[tetros_arr[n].rot][j][i] == 1 && (tetros_arr[n].coord[n] + 1) >= i as u32){
+                                    
+                                                        tetros_arr[n].coord[1]  +=1;
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        // move matrix -1
+                                        for a in 0..14 {
+                                            for b in 2..i {
+
+                                               grid[b][a] = grid[b-1][a];
+                                            }
+                                        }
+
                                     }
                                 }
                                 if(line_cleared_nb == 1){
