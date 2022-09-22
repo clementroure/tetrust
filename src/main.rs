@@ -63,7 +63,7 @@ fn main() {
     let _source = Decoder::new(file).unwrap();
     let source = _source.repeat_infinite();
     let sink = Sink::try_new(&stream_handle).unwrap();
-    sink.set_volume(1);
+    sink.set_volume(1.0);
     sink.append(source);
 
     while let Some(e) = window.next() {
