@@ -3,13 +3,13 @@ use piston_window::color::hex;
 use rand::rngs::{ThreadRng};
 use rand::seq::SliceRandom;
 use std::thread::sleep;
-use std::{thread};
 use std::fs::File;
 use std::io::BufReader;
 use std::time::Duration;
 use rodio::{Decoder, OutputStream, Sink};
 use rodio::source::{Source};
 use std::vec::Vec;
+use native_dialog::{MessageDialog, MessageType};
 #[path = "const/tetros.rs"] mod tetros;
 #[path = "const/colors.rs"] mod colors;
 
@@ -53,7 +53,7 @@ fn main() {
 
     // speed
     let mut frame:u32= 0;
-    let speed:u32 = 20;
+    let mut speed:u32 = 20;
 
     // initial empty grid with 0 value
     let mut grid: [[u32; 14]; 23] = [[0; 14]; 23];
@@ -68,15 +68,12 @@ fn main() {
     // list of tetros active in the game
     let mut tetros_arr: Vec<Block> = vec![];
 
-    //number of tetros left in bag
-    let mut tetros_left_in_bag = 0;
-
     // generate 1st random bag
-    add_block(&mut rng, colors_list, tetros_list, &mut tetros_arr, &mut index, &mut tetros_left_in_bag);
+    add_block(&mut rng, colors_list, tetros_list, &mut tetros_arr, &mut index);
 
     // Play music
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-    let file = BufReader::new(File::open("assets/music.mp3").unwrap());
+    let file = BufReader::new(File::open("assets/audios/music.mp3").unwrap());
     let _source = Decoder::new(file).unwrap();
     let source = _source.repeat_infinite();
     let mut sink = Sink::try_new(&stream_handle).unwrap();
@@ -101,11 +98,11 @@ fn main() {
                 
                     if key == Key::Right {
 
-                        moveHorizontal(1, &mut tetros_arr, colors_list, tetros_list, &mut index, &mut grid, &mut window, &mut score, &mut rng, &mut tetros_left_in_bag);
+                        moveHorizontal(1, &mut tetros_arr, colors_list, tetros_list, &mut index, &mut grid, &mut window, &mut score, &mut rng, &e);
                     }
                     if key == Key::Left {
 
-                        moveHorizontal(-1, &mut tetros_arr, colors_list, tetros_list, &mut index, &mut grid, &mut window, &mut score, &mut rng, &mut tetros_left_in_bag);
+                        moveHorizontal(-1, &mut tetros_arr, colors_list, tetros_list, &mut index, &mut grid, &mut window, &mut score, &mut rng, &e);
                     }
                     if key == Key::Down {
 
@@ -118,12 +115,12 @@ fn main() {
             };
 
             // Update what's displayed on the window
-            render(&mut window, e, &mut tetros_arr);
+            render(&mut window, &e, &mut tetros_arr);
 
             frame+=1;
             if (frame >= speed && isGameOver == false) {
 
-            moveVertical(&mut isGameOver, &mut sink, &mut tetros_arr, colors_list, tetros_list, &mut index, &mut grid, &mut window, &mut score, &mut rng, &mut tetros_left_in_bag);
+            moveVertical(&mut isGameOver, &mut sink, &mut tetros_arr, colors_list, tetros_list, &mut index, &mut grid, &mut window, &mut score, &mut rng, &e);
 
             frame=0;
             tetros_arr[index].coord[1] += 1;
@@ -172,11 +169,11 @@ fn rotate(tetros_arr: &mut Vec<Block>, index: usize, grid: [[u32; 14]; 23]){
     }
 }
 
-fn render(window: &mut PistonWindow, e: Event, tetros_arr: &mut Vec<Block>){
+fn render(window: &mut PistonWindow, e: &Event, tetros_arr: &mut Vec<Block>){
 
     let blockSize:f64 = 38.0;
 
-    window.draw_2d(&e, |c, g, _| {
+    window.draw_2d(e, |c, g, _| {
 
         // background 
         clear([0.05, 0.05, 0.05, 1.0], g);
@@ -207,7 +204,7 @@ fn render(window: &mut PistonWindow, e: Event, tetros_arr: &mut Vec<Block>){
     });
 }
 
-fn moveVertical(isGameOver: &mut bool, sink: &mut Sink, tetros_arr: &mut Vec<Block>, colors_list: [&str; 7], tetros_list: [[[[u32;4];4];4];7], index: &mut usize, grid: &mut [[u32; 14]; 23], window: &mut PistonWindow, score: &mut u32, rng: &mut ThreadRng, tetros_left_in_bag: &mut u8){
+fn moveVertical(isGameOver: &mut bool, sink: &mut Sink, tetros_arr: &mut Vec<Block>, colors_list: [&str; 7], tetros_list: [[[[u32;4];4];4];7], index: &mut usize, grid: &mut [[u32; 14]; 23], window: &mut PistonWindow, score: &mut u32, rng: &mut ThreadRng, e: &Event){
 
     for i in 0..tetros_arr[*index].scheme[0].len() {
         for j in 0..tetros_arr[*index].scheme[0].len() {
@@ -231,21 +228,21 @@ fn moveVertical(isGameOver: &mut bool, sink: &mut Sink, tetros_arr: &mut Vec<Blo
                         // check if game over
                         if((tetros_arr[*index].coord[1] + j as u8) < 4){
 
-                            game_over(&mut *isGameOver, &mut *sink);
+                            game_over(&mut *isGameOver, &mut *sink, *score);
                         }
     
                         // check if a line is full
-                        line_check(&mut *score, &mut *grid, &mut *window);
+                        line_check(&mut *score, &mut *grid, &mut *window, &mut *tetros_arr, *index, &e);
 
                         // fall next block
-                        add_block(&mut *rng, colors_list, tetros_list, &mut *tetros_arr, &mut *index, &mut *tetros_left_in_bag);
+                        add_block(&mut *rng, colors_list, tetros_list, &mut *tetros_arr, &mut *index);
                 }
             }
         }
     }
 }
 
-fn moveHorizontal(dir:i32, tetros_arr: &mut Vec<Block>, colors_list: [&str; 7], tetros_list: [[[[u32;4];4];4];7], index: &mut usize, grid: &mut [[u32; 14]; 23], window: &mut PistonWindow, score: &mut u32, rng: &mut ThreadRng, tetros_left_in_bag: &mut u8){
+fn moveHorizontal(dir:i32, tetros_arr: &mut Vec<Block>, colors_list: [&str; 7], tetros_list: [[[[u32;4];4];4];7], index: &mut usize, grid: &mut [[u32; 14]; 23], window: &mut PistonWindow, score: &mut u32, rng: &mut ThreadRng, e: &Event){
 
     let mut canMove = true;
 
@@ -267,10 +264,10 @@ fn moveHorizontal(dir:i32, tetros_arr: &mut Vec<Block>, colors_list: [&str; 7], 
                     }
 
                     // check if a line is full
-                    line_check(&mut *score, &mut *grid, &mut *window);
+                    line_check(&mut *score, &mut *grid, &mut *window, &mut *tetros_arr, *index, &e);
 
                     // fall next block
-                    add_block(&mut *rng, colors_list, tetros_list, &mut *tetros_arr, &mut *index, &mut *tetros_left_in_bag);
+                    add_block(&mut *rng, colors_list, tetros_list, &mut *tetros_arr, &mut *index);
                 }
 
                 // check if can move left or right
@@ -299,9 +296,7 @@ fn moveHorizontal(dir:i32, tetros_arr: &mut Vec<Block>, colors_list: [&str; 7], 
     }
 }
 
-fn game_over(isGameOver: &mut bool, sink: &mut Sink){
-
-        println!("Game Over");
+fn game_over(isGameOver: &mut bool, sink: &mut Sink, score: u32){
 
         *isGameOver = true;
         sink.stop();
@@ -309,6 +304,137 @@ fn game_over(isGameOver: &mut bool, sink: &mut Sink){
         // let file = BufReader::new(File::open("assets/gameover.wav").unwrap());
         // let source = Decoder::new(file).unwrap();
         // sink.append(source);
+
+        let yes = MessageDialog::new()
+        .set_type(MessageType::Info)
+        .set_title("Game Over !")
+        .set_text(&format!("Final Score: {score}\nDo you want to restart ?"))
+        .show_confirm()
+        .unwrap();
+        if yes {
+            main();
+        }
+        else{
+            std::process::exit(0);
+        }
+}
+
+fn line_check(score: &mut u32, grid: &mut [[u32;14];23], window: &mut PistonWindow, tetros_arr: &mut Vec<Block>, index: usize, e: &Event) {
+
+    // how much lines are full after the last placement
+    let mut line_cleared = vec![];
+
+    // iterate trough the grid
+    for i in 3..23 {
+        let mut line: Vec<u32> = vec![];
+        for j in 2..12 {
+            line.push(grid[i as usize][j as usize])
+        }
+        if !line.contains(&0) {
+
+            println!("line full");
+            line_cleared.push(i);
+        }
+    }
+   
+    displayGrid(grid);
+
+    if(line_cleared.len() > 0) {
+
+        for nb_line in 0..line_cleared.len() {
+
+            let _grid = grid.clone();
+
+            // update grid
+            // clear line
+            for x in 2..12{
+                grid[line_cleared[nb_line]][x] = 0;
+            }
+            // move line y-1
+            for x in 2..12{
+                for y in 2..line_cleared[nb_line]+1{
+                    grid[y][x] =  _grid[y-1][x]
+                }
+            }
+
+            // update tetros display pos
+            // clear tetros parts that are on the line
+            for n in 0..index+1 {
+                let rot = tetros_arr[n].rot;
+                for x in 0..tetros_arr[n].scheme[0].len() {
+                    for y in 0..tetros_arr[n].scheme[0].len() {
+            
+                        if(tetros_arr[n].scheme[tetros_arr[n].rot][y][x] == 1){
+
+                            if (tetros_arr[n].coord[1]+y as u8 == line_cleared[nb_line] as u8 && tetros_arr[n].coord[1] > 0) {
+
+                                tetros_arr[n].scheme[rot][y][x] = 0;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //render(window, e, tetros_arr);
+            //sleep(Duration::from_millis(1000));
+
+            // move tetros y-1
+            for n in 0..index+1 {
+                let mut hasAlreadyMoved = false;
+                for x in 0..tetros_arr[n].scheme[0].len() {
+                    for y in 0..tetros_arr[n].scheme[0].len() {
+            
+                        if(tetros_arr[n].scheme[tetros_arr[n].rot][y][x] == 1){
+
+                            if(tetros_arr[n].coord[1]+y as u8 <= line_cleared[nb_line] as u8&& tetros_arr[n].coord[1] > 0){
+
+                                if(!hasAlreadyMoved){
+                                    hasAlreadyMoved = true;
+                                    tetros_arr[n].coord[1]+=1;
+                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    displayGrid(grid);
+
+    if(line_cleared.len() == 1){
+
+        *score += 100;
+    }
+    else if(line_cleared.len() == 2){
+
+        *score += 300;
+    }
+    else if(line_cleared.len() == 3){
+        
+        *score += 500;
+    }
+    else if(line_cleared.len() >= 4){
+        
+        *score += 800;
+    }
+    *score+=10;
+    window.set_title(format!("Tetrust - score: {}", score));
+}
+
+fn add_block(rng: &mut ThreadRng, colors_list: [&str; 7], tetros_list: [[[[u32;4];4];4];7], tetros_arr: &mut Vec<Block>, index: &mut usize){
+
+    if(*index == 0 || *index == tetros_arr.len()-1){
+
+        let mut nums: Vec<usize> = (0..=6).collect();
+        nums.shuffle(&mut *rng);
+        for num in nums {
+            //println!("{}", num);
+            tetros_arr.push(Block::new(colors_list[num], tetros_list[num]));
+        }
+    }
+
+    *index+=1;
 }
 
 // for debug only
@@ -320,66 +446,5 @@ fn displayGrid(grid: &mut [[u32;14];23]){
         }
         println!();
     }
-}
-
-fn line_check(score: &mut u32, grid: &mut [[u32;14];23], window: &mut PistonWindow) {
-
-    // how much lines are full after the last placement
-    let mut line_cleared_nb = 0;
-
-    // iterate trough the grid
-    for i in 3..23 {
-        let mut line: Vec<u32> = vec![];
-        for j in 2..12 {
-            line.push(grid[i as usize][j as usize])
-        }
-        if !line.contains(&0) {
-
-            println!("line full");
-            line_cleared_nb+=1;
-            // move all upper lines -1
-            for a in 2..12{
-                //grid[i][a] = 0;
-            }
-        }
-    }
-    if(line_cleared_nb == 1){
-
-        *score += 100;
-    }
-    else if(line_cleared_nb == 2){
-
-        *score += 300;
-    }
-    else if(line_cleared_nb == 3){
-        
-        *score += 500;
-    }
-    else if(line_cleared_nb >= 4){
-        
-        *score += 800;
-    }
-    *score+=10;
-    window.set_title(format!("Tetrust - score: {}", score));
-}
-
-fn add_block(rng: &mut ThreadRng, colors_list: [&str; 7], tetros_list: [[[[u32;4];4];4];7], tetros_arr: &mut Vec<Block>, index: &mut usize, tetros_left_in_bag: &mut u8){
-
-    if(*tetros_left_in_bag > 1){
-
-        *tetros_left_in_bag-=1;
-    }
-    else{
-
-        let mut nums: Vec<usize> = (0..=6).collect();
-        nums.shuffle(&mut *rng);
-        for num in nums {
-            //println!("{}", num);
-            tetros_arr.push(Block::new(colors_list[num], tetros_list[num]));
-        }
-
-        *tetros_left_in_bag = 6;
-    }
-
-    *index+=1;
+    println!();
 }
