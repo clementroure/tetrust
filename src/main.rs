@@ -1,7 +1,10 @@
 use piston_window::*;
 use piston_window::color::hex;
+use piston_window::types::Color;
+use piston_window::{text, Context, G2d, Glyphs, Transformed};
 use rand::rngs::{ThreadRng};
 use rand::seq::SliceRandom;
+use std::path::PathBuf;
 use std::thread::sleep;
 use std::fs::File;
 use std::io::BufReader;
@@ -9,6 +12,7 @@ use std::time::Duration;
 use rodio::{Decoder, OutputStream, Sink};
 use rodio::source::{Source};
 use std::vec::Vec;
+use find_folder::Search;
 use native_dialog::{MessageDialog, MessageType};
 #[path = "const/tetros.rs"] mod tetros;
 #[path = "const/colors.rs"] mod colors;
@@ -71,9 +75,14 @@ fn main() {
     // generate 1st random bag
     add_block(&mut rng, colors_list, tetros_list, &mut tetros_arr, &mut index);
 
+    // absolute path of assets folder (relative path crash if trying to run the .exe outside of the editor)
+    let assets = Search::ParentsThenKids(3, 3)
+    .for_folder("assets")
+    .unwrap();
+
     // Play music
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-    let file = BufReader::new(File::open("assets/audios/music.mp3").unwrap());
+    let file = BufReader::new(File::open(assets.join("audios/music.mp3")).unwrap());
     let _source = Decoder::new(file).unwrap();
     let source = _source.repeat_infinite();
     let mut sink = Sink::try_new(&stream_handle).unwrap();
@@ -86,6 +95,10 @@ fn main() {
     // open a window for the game
     let mut window = init_window();
     window.set_position((610, 5));
+
+    // load font
+    let ref font = assets.join("fonts/FiraSans-Regular.ttf");
+    let mut glyphs = window.load_font(font).unwrap();
 
     isGameStarted = true;
 
@@ -115,7 +128,7 @@ fn main() {
             };
 
             // Update what's displayed on the window
-            render(&mut window, &e, &mut tetros_arr);
+            render(&mut window, &e, &mut tetros_arr, &mut glyphs);
 
             frame+=1;
             if (frame >= speed && isGameOver == false) {
@@ -169,7 +182,7 @@ fn rotate(tetros_arr: &mut Vec<Block>, index: usize, grid: [[u32; 14]; 23]){
     }
 }
 
-fn render(window: &mut PistonWindow, e: &Event, tetros_arr: &mut Vec<Block>){
+fn render(window: &mut PistonWindow, e: &Event, tetros_arr: &mut Vec<Block>, glyphs: &mut Glyphs){
 
     let blockSize:f64 = 38.0;
 
@@ -177,6 +190,17 @@ fn render(window: &mut PistonWindow, e: &Event, tetros_arr: &mut Vec<Block>){
 
         // background 
         clear([0.05, 0.05, 0.05, 1.0], g);
+
+        // Text
+        // let transform = c.transform.trans(450.0, 100.0);
+        // text(
+        //     [1.0, 1.0, 1.0, 1.0], 
+        //     32,
+        //     "TEXT",
+        //     glyphs,
+        //      transform,
+        //     g
+        // );
 
         // empty tiles
         for i in 0..10 {
@@ -201,7 +225,9 @@ fn render(window: &mut PistonWindow, e: &Event, tetros_arr: &mut Vec<Block>){
                 }
             }
         }
+
     });
+
 }
 
 fn moveVertical(isGameOver: &mut bool, sink: &mut Sink, tetros_arr: &mut Vec<Block>, colors_list: [&str; 7], tetros_list: [[[[u32;4];4];4];7], index: &mut usize, grid: &mut [[u32; 14]; 23], window: &mut PistonWindow, score: &mut u32, rng: &mut ThreadRng, e: &Event){
@@ -228,7 +254,7 @@ fn moveVertical(isGameOver: &mut bool, sink: &mut Sink, tetros_arr: &mut Vec<Blo
                         // check if game over
                         if((tetros_arr[*index].coord[1] + j as u8) < 4){
 
-                            game_over(&mut *isGameOver, &mut *sink, *score);
+                            game_over(&mut *isGameOver, &mut *sink, *score, &mut *window);
                         }
     
                         // check if a line is full
@@ -296,7 +322,7 @@ fn moveHorizontal(dir:i32, tetros_arr: &mut Vec<Block>, colors_list: [&str; 7], 
     }
 }
 
-fn game_over(isGameOver: &mut bool, sink: &mut Sink, score: u32){
+fn game_over(isGameOver: &mut bool, sink: &mut Sink, score: u32, window: &mut PistonWindow){
 
         *isGameOver = true;
         sink.stop();
@@ -312,6 +338,7 @@ fn game_over(isGameOver: &mut bool, sink: &mut Sink, score: u32){
         .show_confirm()
         .unwrap();
         if yes {
+            //window.set_should_close(true);
             main();
         }
         else{
