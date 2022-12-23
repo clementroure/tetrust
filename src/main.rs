@@ -1,10 +1,8 @@
 use piston_window::*;
 use piston_window::color::hex;
-use piston_window::types::Color;
-use piston_window::{text, Context, G2d, Glyphs, Transformed};
+use piston_window::{text, Glyphs};
 use rand::rngs::{ThreadRng};
 use rand::seq::SliceRandom;
-use std::path::PathBuf;
 use std::thread::sleep;
 use std::fs::File;
 use std::io::BufReader;
@@ -17,11 +15,12 @@ use native_dialog::{MessageDialog, MessageType};
 #[path = "const/tetros.rs"] mod tetros;
 #[path = "const/colors.rs"] mod colors;
 
+// Tetros
 struct Block {
     color: [f32;4],
     scheme: [[[u32;4] ; 4]; 4],
     coord: [u8; 2],
-    rot: usize,
+    rot: usize, // replace by enum
 }
 
 impl Block {
@@ -60,7 +59,7 @@ fn main() {
     let mut speed:u32 = 20;
 
     // initial empty grid with 0 value
-    let mut grid: [[u32; 14]; 23] = [[0; 14]; 23];
+    let mut grid = [[0; 14]; 23];
 
     // current tetros (the one the user is controlling)
     let mut index = 0;
